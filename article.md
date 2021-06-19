@@ -132,7 +132,7 @@ Maybe instead of 100 requests, we now need to make 1,000. And we want to do it 1
 - When all tasks in the first chunk returned, the next chunk will start.
 - We should log at the end of each chunk so we know the progress.
 
-This time, let's use `async/await`. I will put the code in a function:
+Let's use `async/await` to better handle the flow. I will put the code in a function:
 
 ```js
 async function bulkGetDataInChunk(total, chunk) {
@@ -169,7 +169,7 @@ Let's call the function:
 bulkGetDataInChunk(1000, 100);
 ```
 
-We will see the console log like these:
+We will see the console log like this:
 
 ```
 ......
@@ -238,7 +238,6 @@ Instead of an empty array, we declared a `chain` variable and assign it to a `Pr
 Thank you for reading my article. If you find this helpful, let me know, it will encourage me to write more.
 
 The repo of this article: https://github.com/sumtsui/do-bulk-asynchronous-tasks-in-JavaScript
-
 
 
 
