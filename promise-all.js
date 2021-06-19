@@ -19,8 +19,7 @@ function bulkGetData() {
   }
 
   return Promise.all(promises)
-    .then(output)
-    .then(() => output('All done!'))
+    .then((res) => output(res, 'All done!'))
     .catch(output);
 }
 

@@ -8,7 +8,9 @@ Let's say we want to make 100 requests to a server to download 100 pictures. For
 
 For the purpose of this article, I wrote a `getData` function that makes the request and returns a promise. A simple server answers for GET request to path `/picture?query=XXX` and sends back picture data with a random delay.
 
-So if I call `getData(67)`, the server will send back `{"path":"/picture?query=67","data":"pic67"}`. It is very simple and contrived. Don't worry about the implementation for now, I will link to the repo at the end. 
+Here is the [repo](https://github.com/sumtsui/do-bulk-asynchronous-tasks-in-JavaScript) to all the codes shown in this article. You can read ahead or play with the code first. It it up to you.
+
+So if I call `getData(67)`, the server will send back `{"path":"/picture?query=67","data":"pic67"}`. It is very simple and contrived I know.
 
 To meet our expectation, let's try `Promise.all`:
 
@@ -29,7 +31,7 @@ while (i <= total) {
 }
 
 Promise.all(promises)
-  .then(output)
+	.then((res) => output(res, 'All done!'))
   .catch(output);
 ```
 
@@ -48,7 +50,7 @@ GET /picture?query=100
 and when we got back all the responses, we can see the log by the client's `then` method after `Promise.all`:
 
 ```
-output : [
+All done! : [
   '{"path":"/picture?query=1","data":"pic1"}',
   '{"path":"/picture?query=2","data":"pic2"}',
   '{"path":"/picture?query=3","data":"pic3"}',
@@ -70,11 +72,13 @@ Let's artificially fail every 10 request and see what happen:
 +    const pr = i % 10 === 0 ? getDataFail(i) : getData(i);
 ```
 
+No successful request is logged out and only the first failed request that came back was logged at the `catch` call:
+
 ```
 output : {"path":"/not-exist?query=60","error":"Bad Request"}
 ```
 
-No successful request is logged out and only the first failed request that came back was logged at the `catch` call. This is how `Promise.all` behaves and certainly not what we want. So let's modify the code. This time we will chain a `then` and `catch` on each promise, so we are handling the failed case within each promise.
+This is how `Promise.all` behaves and certainly not what we want here. So let's modify the code. This time we will chain a `then` and `catch` on each promise, so we are handling the failed case within each promise.
 
 Now the code looks like this:
 
@@ -96,7 +100,7 @@ while (i <= total) {
 }
 
 Promise.all(promises)
-  .then(output)
+	.then((res) => output(res, 'All done!'))
   .catch(output);
 ```
 
@@ -104,25 +108,27 @@ What we got back:
 
 ```
 output : {"path":"/picture?query=9","data":"pic9"} 
-
 output : {"path":"/picture?query=89","data":"pic89"} 
-
 output : {"path":"/not-exist?query=40","error":"Bad Request"} 
-
 output : {"path":"/picture?query=26","data":"pic26"} 
-
 ......
-
 output : {"path":"/picture?query=23","data":"pic23"} 
-
 output : {"path":"/not-exist?query=50","error":"Bad Request"} 
-
 output : {"path":"/picture?query=51","data":"pic51"} 
 ```
 
 Now we can know exactly each request is succeeded or failed. One thing worth pointing out is the log of each task happened at the time that request was returned thus they were not in order, whereas the last log from `Promise.all` listed all response in order.
 
-Look at `pr.then(output).catch(output)`, when I was doing something like this, is when I get a better understanding of the concept Promise. You can really do whatever you want with it, even if it hasn't fulfilled or rejected. And what you do to the promise 
+Look at `pr.then(output).catch(output)`, when I was doing something like this, is when I get a better understanding of the concept of Promise. You can really do whatever you want with it, even if the promise hasn't fulfilled or rejected. And what you do in the chained `then` and `catch` will affect what the subsequent handlers receive. We have to return the `value` inside `output` helper function so that when `Promise.all` finished, it can log out the final result.
+
+```js
+function output(value, label) {
+  console.log(label || 'output', ':', value, '\n');
++   return value;
+}
+```
+
+
 
 ## Breaking large amount of tasks in chunks
 
@@ -173,37 +179,21 @@ We will see the console log like this:
 
 ```
 ......
-
 output : complete chunk 8 
-
 output : {"path":"/picture?query=84","data":"pic84"} 
-
 output : {"path":"/not-exist?query=90","error":"Bad Request"} 
-
 ......
-
 output : {"path":"/picture?query=82","data":"pic82"} 
-
 output : {"path":"/picture?query=89","data":"pic89"} 
-
 output : {"path":"/picture?query=85","data":"pic85"} 
-
 output : complete chunk 9 
-
 output : {"path":"/picture?query=96","data":"pic96"} 
-
 output : {"path":"/not-exist?query=100","error":"Bad Request"} 
-
 ......
-
 output : {"path":"/picture?query=94","data":"pic94"} 
-
 output : {"path":"/picture?query=98","data":"pic98"} 
-
 output : {"path":"/picture?query=95","data":"pic95"} 
-
 output : complete chunk 10 
-
 output : All done!
 ```
 
@@ -237,7 +227,7 @@ Instead of an empty array, we declared a `chain` variable and assign it to a `Pr
 
 Thank you for reading my article. If you find this helpful, let me know, it will encourage me to write more.
 
-The repo of this article: https://github.com/sumtsui/do-bulk-asynchronous-tasks-in-JavaScript
+The repo of this article can be found [here](https://github.com/sumtsui/do-bulk-asynchronous-tasks-in-JavaScript).
 
 
 
