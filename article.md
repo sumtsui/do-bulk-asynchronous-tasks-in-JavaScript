@@ -237,6 +237,8 @@ Instead of an empty array, we declared a `chain` variable and assign it to a `Pr
 
 Thank you for reading my article. If you find this helpful, let me know, it will encourage me to write more.
 
+The repo of this article: https://github.com/sumtsui/do-bulk-asynchronous-tasks-in-JavaScript
+
 
 
 
